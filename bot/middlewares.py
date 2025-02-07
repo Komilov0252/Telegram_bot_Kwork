@@ -9,7 +9,7 @@ from sqlalchemy.event import dispatcher
 
 from bot.handlers.main_handler import MakeStates
 from db import DB
-from db.models import User
+from db.models import User, Employee
 
 
 class SaveUserMiddleware(BaseMiddleware):
@@ -20,10 +20,19 @@ class SaveUserMiddleware(BaseMiddleware):
         message_user = data.get("event_from_user")
         user = await User.get_by_user_id(id_ = message_user.id)
         if not user:
-            await User.create(first_name = message_user.first_name, last_name = message_user.last_name  , user_id = message_user.id)
+            await User.create(first_name = message_user.first_name, last_name = message_user.last_name  , user_id = message_user.id, username = message_user.username)
         return await handler(event, data)
 
-
+class SaveEmployeeMiddleware(BaseMiddleware):
+    async def __call__(self,
+            handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]],
+            event: Message,
+            data: Dict[str, Any]) -> Any:
+        message_user = data.get("event_from_user")
+        employee = await Employee.get_by_user_id(id_ = message_user.id)
+        # if not employee:
+        #     await Employee.create()
+        return await handler(event, data)
 
 async def all_middleware(dp: Dispatcher, i18n):
     dp.update.middleware(FSMI18nMiddleware(i18n))
